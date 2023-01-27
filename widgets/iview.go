@@ -234,7 +234,9 @@ func (i *InteractiveView) pcapture(e *tcell.EventKey) *tcell.EventKey {
 				return i.getHandler("exitvisual")(e)
 			}
 			if i.visual {
-				return i.visualCapture(e)
+				if i.visualCapture != nil {
+					return i.visualCapture(e)
+				}
 			}
 			return e
 		}
