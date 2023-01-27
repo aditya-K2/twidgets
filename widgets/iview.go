@@ -29,7 +29,7 @@ type InteractiveView struct {
 	View          *tview.Table
 	capture       func(e *tcell.EventKey) *tcell.EventKey
 	vhandler      func(start int, end int)
-	visualCapture func(e *tcell.EventKey) *tcell.EventKey
+	visualCapture func(start, end int, e *tcell.EventKey) *tcell.EventKey
 	content       func() [][]*tview.TableCell
 }
 
@@ -52,7 +52,7 @@ func (i *InteractiveView) SetCapture(
 	i.capture = f
 }
 
-func (i *InteractiveView) SetVisualCapture(f func(e *tcell.EventKey) *tcell.EventKey) {
+func (i *InteractiveView) SetVisualCapture(f func(start, end int, e *tcell.EventKey) *tcell.EventKey) {
 	i.visualCapture = f
 }
 
@@ -235,7 +235,7 @@ func (i *InteractiveView) pcapture(e *tcell.EventKey) *tcell.EventKey {
 			}
 			if i.visual {
 				if i.visualCapture != nil {
-					return i.visualCapture(e)
+					return i.visualCapture(i.vrange.Start, i.vrange.End, e)
 				}
 			}
 			return e
