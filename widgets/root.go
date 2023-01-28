@@ -19,28 +19,26 @@ type CenteredWidget interface {
 }
 
 func NewView01() *View01 {
-	m := &View01{}
+	v := &View01{}
 
-	iv := NewInteractiveView()
 	Root := tview.NewPages()
-	Root.AddPage("iview", iv.View, true, true)
+	v.Root = Root
 
-	m.Root = Root
-	return m
+	return v
 }
 
-func (m *View01) OpenCenteredWidget(t CenteredWidget) {
+func (v *View01) openCenteredWidget(t CenteredWidget) {
 	p := *(t.Primitive())
 	closec := make(chan bool)
 	currentTime := time.Now().String()
 	sHandler := t.SelectionHandler()
-	_, _, w, h := m.Root.GetRect()
+	_, _, w, h := v.Root.GetRect()
 
 	close := func() {
-		m.Root.RemovePage(currentTime)
+		v.Root.RemovePage(currentTime)
 	}
 	draw := func() {
-		m.Root.AddPage(currentTime, t.Primitive(), false, true)
+		v.Root.AddPage(currentTime, t.Primitive(), false, true)
 		p.SetRect(t.Size(w, h))
 	}
 	redraw := func() {
@@ -57,10 +55,8 @@ func (m *View01) OpenCenteredWidget(t CenteredWidget) {
 			delete()
 			return nil
 		} else if e.Key() == tcell.KeyEnter {
-			sHandler(
-				p.GetCell(
-					p.GetSelection()).Text)
-			close()
+			sHandler(p.GetCell(p.GetSelection()).Text)
+			delete()
 			return nil
 		}
 		return e
@@ -77,7 +73,7 @@ func (m *View01) OpenCenteredWidget(t CenteredWidget) {
 				select {
 				case <-tck.C:
 					{
-						_, _, _w, _h := m.Root.GetRect()
+						_, _, _w, _h := v.Root.GetRect()
 						if _w != w || _h != h {
 							w = _w
 							h = _h
@@ -95,4 +91,13 @@ func (m *View01) OpenCenteredWidget(t CenteredWidget) {
 	resizeHandler()
 
 	draw()
+}
+
+func (v *View01) OpenListMenu(
+	title string, list []string, shandler func(s string)) {
+	m := newMenu()
+	m.Content(list)
+	m.SetSelectionHandler(shandler)
+	m.Title(title)
+	v.openCenteredWidget(m)
 }

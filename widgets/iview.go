@@ -235,7 +235,9 @@ func (i *InteractiveView) pcapture(e *tcell.EventKey) *tcell.EventKey {
 			}
 			if i.visual {
 				if i.visualCapture != nil {
-					return i.visualCapture(i.vrange.Start, i.vrange.End, e)
+					if i.visualCapture(i.vrange.Start, i.vrange.End, e) == nil {
+						i.toggleVisualMode()
+					}
 				}
 			}
 			return e
