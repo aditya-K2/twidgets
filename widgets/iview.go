@@ -151,7 +151,6 @@ func (i *InteractiveView) getHandler(
 				if i.baseSel == -1 {
 					panic(berr)
 				}
-				return nil
 			}
 			return e
 		},
@@ -166,7 +165,6 @@ func (i *InteractiveView) getHandler(
 				if i.baseSel == -1 {
 					panic(berr)
 				}
-				return nil
 			}
 			return e
 		},
@@ -183,7 +181,6 @@ func (i *InteractiveView) getHandler(
 				i.vrange.Start = 0
 				i.vrange.End = i.baseSel
 				i.View.ScrollToBeginning()
-				return nil
 			}
 			return e
 		},
@@ -192,7 +189,6 @@ func (i *InteractiveView) getHandler(
 				i.vrange.Start = i.baseSel
 				i.vrange.End = i.View.GetRowCount() - 1
 				i.View.ScrollToEnd()
-				return nil
 			}
 			return e
 		},
