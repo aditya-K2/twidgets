@@ -1,8 +1,8 @@
 package widgets
 
 import (
+	"github.com/aditya-K2/tview"
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
 )
 
 var (

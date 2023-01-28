@@ -3,8 +3,8 @@ package widgets
 import (
 	"time"
 
+	"github.com/aditya-K2/tview"
 	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
 )
 
 type View01 struct {
