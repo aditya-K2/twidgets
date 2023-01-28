@@ -85,7 +85,9 @@ func NewInteractiveView() *InteractiveView {
 			// Copying the Same Style for the visual block as the
 			// first cell
 			_b := *s[_i][0]
-			i.View.SetCell(_i, 0, _b.SetText(b))
+			if !_b.NotSelectable {
+				i.View.SetCell(_i, 0, _b.SetText(b))
+			}
 			for _j := range v {
 				i.View.SetCell(_i, _j+1,
 					v[_j])
