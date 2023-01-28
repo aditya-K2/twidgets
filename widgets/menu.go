@@ -70,7 +70,7 @@ func (c *menu) SetSelectionHandler(f func(s string)) {
 	c.sHandler = f
 }
 
-func (c *menu) Primitive() *tview.Table { return c.Menu }
+func (c *menu) Table() *tview.Table { return c.Menu }
 
 func (c *menu) Content(s []string) { c.content = s }
 

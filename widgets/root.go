@@ -12,7 +12,7 @@ type View01 struct {
 }
 
 type CenteredWidget interface {
-	Primitive() *tview.Table
+	Table() *tview.Table
 	ContentHandler()
 	SelectionHandler() func(s string)
 	Size(mw, mh int) (int, int, int, int)
@@ -28,7 +28,7 @@ func NewView01() *View01 {
 }
 
 func (v *View01) openCenteredWidget(t CenteredWidget) {
-	p := *(t.Primitive())
+	widget := (t.Table())
 	closec := make(chan bool)
 	currentTime := time.Now().String()
 	sHandler := t.SelectionHandler()
@@ -38,8 +38,8 @@ func (v *View01) openCenteredWidget(t CenteredWidget) {
 		v.Root.RemovePage(currentTime)
 	}
 	draw := func() {
-		v.Root.AddPage(currentTime, t.Primitive(), false, true)
-		p.SetRect(t.Size(w, h))
+		v.Root.AddPage(currentTime, t.Table(), false, true)
+		widget.SetRect(t.Size(w, h))
 	}
 	redraw := func() {
 		close()
@@ -55,13 +55,13 @@ func (v *View01) openCenteredWidget(t CenteredWidget) {
 			delete()
 			return nil
 		} else if e.Key() == tcell.KeyEnter {
-			sHandler(p.GetCell(p.GetSelection()).Text)
+			sHandler(widget.GetCell(widget.GetSelection()).Text)
 			delete()
 			return nil
 		}
 		return e
 	}
-	p.SetInputCapture(capture)
+	widget.SetInputCapture(capture)
 
 	t.ContentHandler()
 
