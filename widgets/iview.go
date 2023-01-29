@@ -24,6 +24,7 @@ type _range struct {
 
 type InteractiveView struct {
 	visual        bool
+	disableVisual bool
 	vrange        *_range
 	baseSel       int
 	View          *tview.Table
@@ -56,15 +57,20 @@ func (i *InteractiveView) SetVisualCapture(f func(start, end int, e *tcell.Event
 	i.visualCapture = f
 }
 
+func (i *InteractiveView) DisableVisualMode(disable bool) {
+	i.disableVisual = disable
+}
+
 func NewInteractiveView() *InteractiveView {
 	view := tview.NewTable()
 	view.SetSelectable(true, false)
 	view.SetBackgroundColor(tcell.ColorDefault)
 
 	i := &InteractiveView{
-		View:   view,
-		vrange: &_range{},
-		visual: false,
+		View:          view,
+		vrange:        &_range{},
+		visual:        false,
+		disableVisual: false,
 	}
 
 	_capture := func(e *tcell.EventKey) *tcell.EventKey {
@@ -78,15 +84,17 @@ func NewInteractiveView() *InteractiveView {
 		i.View.Clear()
 		s := i.content()
 		for _i, v := range s {
-			b := ""
-			if i.visual && (_i >= i.vrange.Start && _i <= i.vrange.End) {
-				b = "[blue::]█[::]"
-			}
-			// Copying the Same Style for the visual block as the
-			// first cell
-			_b := *s[_i][0]
-			if !_b.NotSelectable {
-				i.View.SetCell(_i, 0, _b.SetText(b))
+			if !i.disableVisual {
+				b := ""
+				if i.visual && (_i >= i.vrange.Start && _i <= i.vrange.End) {
+					b = "[blue::]█[::]"
+				}
+				// Copying the Same Style for the visual block as the
+				// first cell
+				_b := *s[_i][0]
+				if !_b.NotSelectable {
+					i.View.SetCell(_i, 0, _b.SetText(b))
+				}
 			}
 			for _j := range v {
 				i.View.SetCell(_i, _j+1,
@@ -115,6 +123,13 @@ func (i *InteractiveView) enterVisualMode() {
 	row, _ := i.View.GetSelection()
 	i.baseSel = row
 	i.vrange.Start, i.vrange.End = row, row
+}
+
+func (i *InteractiveView) ExitVisualMode() {
+	if i.visual {
+		i.exitVisualMode()
+		i.visual = !i.visual
+	}
 }
 
 func (i *InteractiveView) toggleVisualMode() {
