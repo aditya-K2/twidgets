@@ -25,6 +25,7 @@ type _range struct {
 type InteractiveView struct {
 	visual        bool
 	disableVisual bool
+	skip          bool
 	vrange        *_range
 	baseSel       int
 	View          *tview.Table
@@ -61,6 +62,17 @@ func (i *InteractiveView) DisableVisualMode(disable bool) {
 	i.disableVisual = disable
 }
 
+func (i *InteractiveView) ExitVisualMode() {
+	if i.visual {
+		i.exitVisualMode()
+		i.visual = !i.visual
+	}
+}
+
+func (i *InteractiveView) SkipNotSelectableRows(skip bool) {
+	i.skip = skip
+}
+
 func NewInteractiveView() *InteractiveView {
 	view := tview.NewTable()
 	view.SetSelectable(true, false)
@@ -71,6 +83,7 @@ func NewInteractiveView() *InteractiveView {
 		vrange:        &_range{},
 		visual:        false,
 		disableVisual: false,
+		skip:          true,
 	}
 
 	_capture := func(e *tcell.EventKey) *tcell.EventKey {
@@ -125,13 +138,6 @@ func (i *InteractiveView) enterVisualMode() {
 	i.vrange.Start, i.vrange.End = row, row
 }
 
-func (i *InteractiveView) ExitVisualMode() {
-	if i.visual {
-		i.exitVisualMode()
-		i.visual = !i.visual
-	}
-}
-
 func (i *InteractiveView) toggleVisualMode() {
 	if i.visual {
 		i.exitVisualMode()
@@ -171,18 +177,20 @@ func (i *InteractiveView) getHandler(
 					panic(berr)
 				}
 			}
-			// Skip Non Selectable Rows
-			r, c := i.View.GetSelection()
-			if r > 0 && i.View.GetCell(r-1, c).NotSelectable {
-				for r = r - 1; r > 0 && i.View.GetCell(r, c).NotSelectable; r-- {
-				}
-				// If the cell that is about to be selected is first one
-				// and isn't selectable just remain where you are.
-				if r == 0 && i.View.GetCell(0, 1).NotSelectable {
+			if i.skip {
+				// Skip Non Selectable Rows
+				r, c := i.View.GetSelection()
+				if r > 0 && i.View.GetCell(r-1, c).NotSelectable {
+					for r = r - 1; r > 0 && i.View.GetCell(r, c).NotSelectable; r-- {
+					}
+					// If the cell that is about to be selected is first one
+					// and isn't selectable just remain where you are.
+					if r == 0 && i.View.GetCell(0, 1).NotSelectable {
+						return nil
+					}
+					i.View.Select(r, c)
 					return nil
 				}
-				i.View.Select(r, c)
-				return nil
 			}
 			return e
 		},
@@ -198,20 +206,22 @@ func (i *InteractiveView) getHandler(
 					panic(berr)
 				}
 			}
-			// Skip Non Selectable Rows
-			// Using 1 instead of c here because sometimes visual column is selected
-			// which doesn't return correct value for NotSelectable
-			r, _ := i.View.GetSelection()
-			if r < i.View.GetRowCount()-1 && i.View.GetCell(r+1, 1).NotSelectable {
-				for r = r + 1; r < i.View.GetRowCount()-1 && i.View.GetCell(r, 1).NotSelectable; r++ {
-				}
-				i.View.Select(r, 1)
-				// If the cell that is about to be selected is first one
-				// and isn't selectable just remain where you are.
-				if r == i.View.GetRowCount()-1 && i.View.GetCell(r, 1).NotSelectable {
+			if i.skip {
+				// Skip Non Selectable Rows
+				// Using 1 instead of c here because sometimes visual column is selected
+				// which doesn't return correct value for NotSelectable
+				r, _ := i.View.GetSelection()
+				if r < i.View.GetRowCount()-1 && i.View.GetCell(r+1, 1).NotSelectable {
+					for r = r + 1; r < i.View.GetRowCount()-1 && i.View.GetCell(r, 1).NotSelectable; r++ {
+					}
+					// If the cell that is about to be selected is first one
+					// and isn't selectable just remain where you are.
+					if r == i.View.GetRowCount()-1 && i.View.GetCell(r, 1).NotSelectable {
+						return nil
+					}
+					i.View.Select(r, 1)
 					return nil
 				}
-				return nil
 			}
 			return e
 		},
